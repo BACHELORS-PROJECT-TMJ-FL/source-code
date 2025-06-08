@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "experiment3"
+version = "1.0.0"
+description = ""
+license = "Apache-2.0"
+dependencies = [
+    "flwr[simulation]>=1.15.1",
+    "flwr-datasets[vision]>=0.5.0",
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "DanielMathias"
+
+[tool.flwr.app.components]
+serverapp = "experiment3ERAGEM.server_app:app"
+clientapp = "experiment3ERAGEM.client_app:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 1
+rounds-per-task = 10
+fraction-fit = 1
+local-epochs = 1
+ILStrategy = "Fed-A-GEM" # "StandardFL", "Fed-A-GEM", "Fed-ER", "Fed-ER-0%", "EWC"
+ILVariant = "Domain" # "Task", "Domain"
+run-id = 0
+
+experiment-name = "sletmig"
+dataset = "MNIST" # "MNIST", "FEMNIST"
+data.fold-cv-5 = 1
+data.fold-cv-index = 0 # [0; 4]
+
+[tool.flwr.federations]
+default = "local-simulation"
+
+[tool.flwr.federations.local-simulation]
+options.num-supernodes = 5 #! MUST BE 5 or less

@@ -1,0 +1,90 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "flwrapp"
+version = "1.0.0"
+description = ""
+license = "Apache-2.0"
+dependencies = [
+    "flwr[simulation]>=1.15.1",
+    "flwr-datasets[vision]>=0.5.0",
+    "flwr-datasets>=0.5.0",
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "xgboost==3.0.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "DanielOgMathias"
+
+[tool.flwr.app.components]
+serverapp = "xgb_il_dental.server_app:app"
+clientapp = "xgb_il_dental.client_app:app"
+
+[tool.flwr.app.config]
+run-id = 0
+experiment-name = ""
+
+# Server
+num-server-rounds = 10
+num-clients = 2
+seed = 42
+
+# Client
+local-epochs = 2
+batch-size = 32
+
+# Data
+data.partition-method = "big-guy" # "equal", "big-guy", "random"
+
+data.fold-cv-5 = 0 # Whether to use 5-fold cross-validation or not
+data.fold-cv-index = 0 # Which fold to use for 5-fold cross-validation
+data.processed-cached = 0 # Whether the preprocessed-data is cached, do not change
+data.processed-data-path = "./dental_data/Data/processed_data.json" # Path to the processed data
+
+# IL config
+il.initial-round-percentage = 0.10 # Percentage of data to initially train the model on
+il.num-initial-server-rounds = 50 # Number of rounds to train the model on the initial data
+il.num-rounds-per-increment = 10 # Number of rounds to train the model on the incremented data
+il.num-increments = 25 # Number of increments to train the model on
+il.stop-after-initial = 1
+
+il.data-strategy = "replay" # "buffer", "replay"
+il.replay-percentage = 0.0 # Percentage of data to replay
+il.ewc-lambda = 0.0 # EWC lambda 
+
+# This only is relevant for saving model in incremental learning
+save-model = 1
+load-weights = 0
+
+# XG Boost Modelparams 
+params.eta = 0.1                    # Learning rate
+params.gamma = 0                    # Minimum loss reduction required to make a further partition on a leaf node of the tree.
+params.reg-alpha = 0                # L1 regularization term on weights
+params.reg-lambda = 0.1             # L2 regularization term on weights
+params.max-depth = 2                # maximum depth of a tree
+params.min-child-weight = 1
+params.n-estimators = 100           # Number of trees in the ensemble
+params.colsample-bytree = 1
+params.subsample = 1.0
+params.num-parallel-tree = 1
+params.nthread = 16
+params.objective = "binary:logistic"
+params.eval-metric = "auc"
+params.tree-method = "hist"
+
+# MLP Modelparams
+params.lr = 0.001
+params.mlp-name = "Net1layer" # Options: "Net1layer", "Net2layer", "Net3layer", "Net1layerLarge"
+
+
+[tool.flwr.federations]
+default = "local-simulation"
+
+[tool.flwr.federations.local-simulation]
+options.num-supernodes = 2
